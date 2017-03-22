@@ -10,6 +10,7 @@ import (
 	"regexp"
 	// "strconv"
 	"time"
+	"strings"
 )
 
 var mux map[string]func(http.ResponseWriter, *http.Request)
@@ -71,6 +72,13 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		// filename := strconv.FormatInt(time.Now().Unix(), 10) + fileext
 		filename := handler.Filename
 
+		//check upload dir exists or not
+		_, err = PathExists(strings.Trim(Upload_Dir,"."))
+		if err != nil {
+			fmt.Fprintf(w, "%v", "创建目录失败  "+ err.Error())
+			return
+		}
+
 		//check file exists or not
 		fi, err := os.Open(Upload_Dir+filename)
 		if err != nil && os.IsNotExist(err) {
@@ -109,4 +117,23 @@ func check(name string) bool {
 		}
 	}
 	return true
+}
+
+func PathExists(path string) (bool, error) {
+	dir, _ := os.Getwd()  //当前的目录
+	_, err := os.Stat(dir+path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+
+		err := os.Mkdir(dir+path, os.ModePerm)
+		if err != nil {
+		  // fmt.Println(err)
+		  return false, err
+		 }
+		// fmt.Println("创建目录" + dir + path + "成功")
+		return false, nil
+	}
+	return false, err
 }
