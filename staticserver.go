@@ -11,6 +11,8 @@ import (
 	// "strconv"
 	"time"
 	"strings"
+	"io/ioutil"
+	"encoding/json"
 )
 
 var mux map[string]func(http.ResponseWriter, *http.Request)
@@ -19,6 +21,10 @@ type Myhandler struct{}
 type home struct {
 	Title string
 }
+// type ListFiles struct {
+// 	Name string `json:"name"`
+// 	Size string `json:"size"`
+// }
 
 const (
 	Template_Dir = "./view/"
@@ -35,6 +41,8 @@ func main() {
 	mux["/"] = index
 	mux["/upload"] = upload
 	mux["/file"] = StaticServer
+	mux["/list"] = filelist
+	mux["/files"] = listindex
 	fmt.Println("服务已启动：127.0.0.1:8000")
 	server.ListenAndServe()
 }
@@ -108,6 +116,26 @@ func StaticServer(w http.ResponseWriter, r *http.Request) {
 	http.StripPrefix("/file", http.FileServer(http.Dir("./upload/"))).ServeHTTP(w, r)
 }
 
+func listindex(w http.ResponseWriter, r *http.Request) {
+	title := home{Title: "文件列表"}
+	t, _ := template.ParseFiles(Template_Dir + "list.html")
+	t.Execute(w, title)
+}
+
+func filelist(w http.ResponseWriter, r *http.Request) {
+	// lm := make([]ListFiles, 0)
+	// arr := []string{"hello", "apple", "python", "golang", "pear"}
+	dir, _ := os.Getwd()
+	arr, _ := ListDir(dir+"/upload", ".go")
+	data, err := json.Marshal(arr)
+	if err == nil && data != nil {
+		fmt.Fprintf(w, string(data))
+		return
+	}
+	fmt.Fprintf(w, "%v", "暂无内容")
+}
+
+
 func check(name string) bool {
 	ext := []string{".exe", ".js", ".png"}
 
@@ -136,4 +164,27 @@ func PathExists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+
+//获取指定目录下的所有文件，不进入下一级目录搜索，可以匹配后缀过滤。
+func ListDir(dirPth string, suffix string) (files []string, err error) {
+ files = make([]string, 0, 10)
+ dir, err := ioutil.ReadDir(dirPth)
+ if err != nil {
+  return nil, err
+ }
+ // PthSep := string(os.PathSeparator)
+ suffix = strings.ToUpper(suffix) //忽略后缀匹配的大小写
+ for _, fi := range dir {
+  if fi.IsDir() { // 忽略目录
+   continue
+  }
+  if strings.HasSuffix(strings.ToUpper(fi.Name()), suffix) { //忽略匹配文件
+   continue
+  }
+  // files = append(files, dirPth+PthSep+fi.Name())
+  files = append(files, fi.Name())
+ }
+ return files, nil
 }
