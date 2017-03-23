@@ -73,7 +73,7 @@
     }
     function reload(data){
         console.log(data)
-        ajaxSend("http://127.0.0.1:8000/list", "GET", null,contentHandler);
+        window.location.href=window.location.href;
     }
     function DelFile(filename) {
         ajaxSend("http://127.0.0.1:8000/upload", "DELETE", filename,reload);
