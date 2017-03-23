@@ -8,11 +8,12 @@ import (
 	"os"
 	// "path/filepath"
 	"regexp"
-	// "strconv"
+	"strconv"
 	"time"
 	"strings"
 	"io/ioutil"
 	"encoding/json"
+	"bytes"
 )
 
 var mux map[string]func(http.ResponseWriter, *http.Request)
@@ -21,10 +22,10 @@ type Myhandler struct{}
 type home struct {
 	Title string
 }
-// type ListFiles struct {
-// 	Name string `json:"name"`
-// 	Size string `json:"size"`
-// }
+type ListFiles struct {
+	Name string `json:"name"`
+	Size string `json:"size"`
+}
 
 const (
 	Template_Dir = "./view/"
@@ -65,7 +66,8 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		t, _ := template.ParseFiles(Template_Dir + "upfile.html")
 		t.Execute(w, "上传文件")
-	} else {
+	}
+	if r.Method == "POST" {
 		r.ParseMultipartForm(32 << 20)
 		file, handler, err := r.FormFile("uploadfile")
 		if err != nil {
@@ -96,13 +98,42 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				fmt.Fprintf(w, "%v", "上传失败  "+ err.Error())
 				return
 			}
-			http.Redirect(w, r, "/file", http.StatusFound)
+			http.Redirect(w, r, "/files", http.StatusFound)
 		 }
 		defer fi.Close()
 		fmt.Fprintf(w, "%v", "文件已经存在，请重新上传")
 		
 		// filedir, _ := filepath.Abs(Upload_Dir + filename)
 		// fmt.Fprintf(w, "%v", filename+"上传完成,服务器地址:"+filedir)
+	}
+	if r.Method == "DELETE" {
+		// TODO MULTI DELETE
+		result, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Fprintf(w, "%v", "删除失败  "+ err.Error())
+			return
+	    } else {
+	    	fn := bytes.NewBuffer(result).String()
+	    	err := os.Remove(Upload_Dir+fn) //删除文件
+			if err != nil {
+				fmt.Fprintf(w, "%v", fn+ "删除失败  "+ err.Error())
+				return
+			}
+	   //  	result := bytes.NewBuffer(result).String()
+	   //  	for _, file := range result {
+				// err := os.Remove(Upload_Dir+file) //删除文件
+				// if err != nil {
+				// 	fmt.Fprintf(w, "%v", file+ "删除失败  "+ err.Error())
+				// 	return
+				// }
+			}
+			data, err := json.Marshal(string("删除成功"))
+			if err == nil && data != nil {
+				fmt.Fprintf(w, string(data))
+				return
+			}
+	        // fmt.Fprintf(w, string("删除成功"))
+	 //    }
 	}
 }
 
@@ -118,7 +149,7 @@ func StaticServer(w http.ResponseWriter, r *http.Request) {
 
 func listindex(w http.ResponseWriter, r *http.Request) {
 	title := home{Title: "文件列表"}
-	t, _ := template.ParseFiles(Template_Dir + "list.html")
+	t, _ := template.ParseFiles(Template_Dir + "files.html")
 	t.Execute(w, title)
 }
 
@@ -168,8 +199,9 @@ func PathExists(path string) (bool, error) {
 
 
 //获取指定目录下的所有文件，不进入下一级目录搜索，可以匹配后缀过滤。
-func ListDir(dirPth string, suffix string) (files []string, err error) {
- 	files = make([]string, 0, 10)
+func ListDir(dirPth string, suffix string) (files []ListFiles, err error) {
+	lm := make([]ListFiles, 0)
+	// files = make([]string, 0, 10)
  	dir, err := ioutil.ReadDir(dirPth)
 	if err != nil {
 	  	return nil, err
@@ -184,7 +216,11 @@ func ListDir(dirPth string, suffix string) (files []string, err error) {
 		   	continue
 		}
   		// files = append(files, dirPth+PthSep+fi.Name())
-  		files = append(files, fi.Name())
+		var m ListFiles
+		m.Name = fi.Name()
+		m.Size = strconv.FormatInt(fi.Size()/1024, 10)
+		lm = append(lm, m)
+		// files = append(files, fi.Name())
  	}
- 	return files, nil
+	return lm, nil
 }

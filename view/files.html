@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+    <div class = "container">
+        <div id="control">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-striped" id="datas">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>名称</th>
+                            <th>大小(KB)</th>
+                            <th>删除</th>
+                            <th>选择</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="mytemplate">
+                            <td id="NO"></td>
+                            <td id="Name"></td>
+                            <td id="Size"></td>
+                            <td id="Del"></td>
+                            <td id="Operation"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <button type="button" class="btn btn-danger" onclick="DelFiles()">删除选中的文件</button>
+            <div class="desc">©Songroger | HFS(Powerd by Go)</div>
+        </div>
+    </div>
+<script type="text/javascript">
+    window.onload=getData()
+    //显示处理
+    function getData(){
+        ajaxSend("http://127.0.0.1:8000/list", "GET", null,contentHandler);
+    }
+    function contentHandler(text) {
+        // console.log(text);
+        // var draw = document.getElementById("control");
+        var table = document.getElementById("datas");
+        for (var i = 0; i<text.length;i++) {
+            // console.log(text[i]);
+            // draw.innerHTML += "<a href='/"+ text[i].name+"'>"+text[i].name+"</a><br>";
+            var newRow = table.insertRow(); //创建新行
+            var newCell = newRow.insertCell(0); //创建新单元格
+            newCell.innerHTML = i+1;
+            newCell.setAttribute("align","center"); //设置位置
+            var newCell = newRow.insertCell(1);
+            newCell.innerHTML = "<a href='/"+ text[i].name+"'>"+text[i].name+"</a><br>";
+            newCell.setAttribute("align","center"); //设置位置
+            var newCell = newRow.insertCell(2);
+            newCell.innerHTML = text[i].size;
+            newCell.setAttribute("align","center"); //设置位置
+            var newCell = newRow.insertCell(3);
+            newCell.innerHTML = "<button type='button' onclick=DelFile('"+text[i].name+"')>删除</button>";
+            newCell.setAttribute("align","center"); //设置位置
+            var newCell = newRow.insertCell(4);
+            newCell.innerHTML = "<input class='mycheckbox'type='checkbox' value='" + i + "'>";
+            newCell.setAttribute("align","center"); //设置位置
+        }
+        // document.getElementById("display").style.display="none";
+        // document.getElementById("start").style.display="none";
+
+    }
+    function reload(data){
+        console.log(data)
+        ajaxSend("http://127.0.0.1:8000/list", "GET", null,contentHandler);
+    }
+    function DelFile(filename) {
+        ajaxSend("http://127.0.0.1:8000/upload", "DELETE", filename,reload);
+    }
+
+    function DelFiles() {
+        var filename = new Array();
+        // $(".mycheckbox").each(function () {
+        //     if ($(this).is(':checked')) {
+        //         //   console.log($(this).val())
+        //         filename.push($(this).parent().prev().prev().text());
+        //     }
+        // });
+        // if (filename.length < 1) return;   //没有选择时退出
+        // var o = new Object();
+        // o.filename = filename;
+        var data = JSON.stringify(filename)
+        ajaxSend("http://127.0.0.1:8000/list", "DELETE", null,contentHandler);
+    }
+
+    // ajax 对象
+    function ajaxObject() {
+        var xmlHttp;
+        try {
+            // Firefox, Opera 8.0+, Safari
+            xmlHttp = new XMLHttpRequest();
+            } 
+        catch (e) {
+            // Internet Explorer
+            try {
+                    xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
+                } catch (e) {
+                try {
+                    xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (e) {
+                    alert("您的浏览器不支持AJAX！");
+                    return false;
+                }
+            }
+        }
+        return xmlHttp;
+    }
+
+    // ajax请求：
+    function ajaxSend (url, method, data, callback) {
+        var ajax = ajaxObject();
+        ajax.open(method , url , true );
+        ajax.setRequestHeader( "Content-Type" , "application/json" );
+        ajax.onreadystatechange = function () {
+            if( ajax.readyState == 4 ) {
+                if( ajax.status == 200 ) {
+                    // console.log(ajax.responseText);
+                    var textobj = JSON.parse(ajax.responseText);
+                    // console.log(textobj) 
+                    callback(textobj)
+                }
+                else {
+                    alert( "请求错误！错误码："+ajax.status );
+                    window.location.href=window.location.href;
+                    // window.location.reload();
+                    //document.getElementById("start").style.display="block";
+                }
+            }
+            };
+        ajax.send(data);
+    }
+</script>
+</body>
+
+</html>
