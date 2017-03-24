@@ -30,11 +30,12 @@ type ListFiles struct {
 const (
 	Template_Dir = "./view/"
 	Upload_Dir   = "./upload/"
+	Hosts = ":8000"
 )
 
 func main() {
 	server := http.Server{
-		Addr:        ":8000",
+		Addr:        Hosts,
 		Handler:     &Myhandler{},
 		ReadTimeout: 10 * time.Second,
 	}
@@ -44,7 +45,7 @@ func main() {
 	mux["/file"] = StaticServer
 	mux["/list"] = filelist
 	mux["/files"] = listindex
-	fmt.Println("服务已启动：127.0.0.1:8000")
+	fmt.Println("服务已启动", Hosts)
 	server.ListenAndServe()
 }
 
@@ -76,20 +77,20 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		}
 		// fileext := filepath.Ext(handler.Filename)
 		// if check(fileext) == false {
-		// 	fmt.Fprintf(w, "%v", "不允许的上传类型")
+		// 	fmt.Fprintf(w, "%v", "不允许上传该类型文件")
 		// 	return
 		// }
 		// filename := strconv.FormatInt(time.Now().Unix(), 10) + fileext
 		filename := handler.Filename
 
-		//check upload dir exists or not
+		// check upload dir exists or not
 		_, err = PathExists(strings.Trim(Upload_Dir,"."))
 		if err != nil {
 			fmt.Fprintf(w, "%v", "创建目录失败  "+ err.Error())
 			return
 		}
 
-		//check file exists or not
+		// check file exists or not
 		fi, err := os.Open(Upload_Dir+filename)
 		if err != nil && os.IsNotExist(err) {
 			f, _ := os.OpenFile(Upload_Dir+filename, os.O_CREATE|os.O_WRONLY, 0660)
@@ -133,7 +134,6 @@ func upload(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 	        // fmt.Fprintf(w, string("删除成功"))
-	 //    }
 	}
 }
 
@@ -179,7 +179,7 @@ func check(name string) bool {
 }
 
 func PathExists(path string) (bool, error) {
-	dir, _ := os.Getwd()  //当前的目录
+	dir, _ := os.Getwd()  //当前目录
 	_, err := os.Stat(dir+path)
 	if err == nil {
 		return true, nil
@@ -197,8 +197,7 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
-
-//获取指定目录下的所有文件，不进入下一级目录搜索，可以匹配后缀过滤。
+// 获取指定目录下的所有文件，不进入下一级目录搜索，可以匹配后缀过滤。
 func ListDir(dirPth string, suffix string) (files []ListFiles, err error) {
 	lm := make([]ListFiles, 0)
 	// files = make([]string, 0, 10)

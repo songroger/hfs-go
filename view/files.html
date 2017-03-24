@@ -9,40 +9,40 @@
 <body>
     <div class = "container">
         <div id="control">
-            <div class="row">
-                <div class="col-md-6">
-                    <table class="table table-striped" id="datas">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>名称</th>
-                            <th>大小(KB)</th>
-                            <th>删除</th>
-                            <th>选择</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr id="mytemplate">
-                            <td id="NO"></td>
-                            <td id="Name"></td>
-                            <td id="Size"></td>
-                            <td id="Del"></td>
-                            <td id="Operation"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="col-md-6">
+                <table align="center" valign="middle" id="datas">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>名称</th>
+                        <th>大小(KB)</th>
+                        <th>操作</th>
+                        <!-- <th>选择</th> -->
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td id="NO"></td>
+                        <td id="Name"></td>
+                        <td id="Size"></td>
+                        <td id="Del"></td>
+                        <!-- <td id="Operation"></td> -->
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-            <button type="button" class="btn btn-danger" onclick="DelFiles()">删除选中的文件</button>
-            <div class="desc">©Songroger | HFS(Powerd by Go)</div>
+            <a href="/upload"><input type = "button" value = "上传文件" class = "start upbtn"></a><br>
+            <!-- <button type="button" class="start" onclick="DelFiles()">删除选中的文件</button> -->
+            <div valign="bottom">©Songroger | HFS(Powerd by Go)</div>
         </div>
     </div>
 <script type="text/javascript">
     window.onload=getData()
-    //显示处理
+    // 获取数据
     function getData(){
-        ajaxSend("http://127.0.0.1:8000/list", "GET", null,contentHandler);
+        ajaxSend("/list", "GET", null,contentHandler);
     }
+    // 添加内容
     function contentHandler(text) {
         // console.log(text);
         // var draw = document.getElementById("control");
@@ -63,22 +63,24 @@
             var newCell = newRow.insertCell(3);
             newCell.innerHTML = "<button type='button' onclick=DelFile('"+text[i].name+"')>删除</button>";
             newCell.setAttribute("align","center"); //设置位置
-            var newCell = newRow.insertCell(4);
-            newCell.innerHTML = "<input class='mycheckbox'type='checkbox' value='" + i + "'>";
-            newCell.setAttribute("align","center"); //设置位置
+            // var newCell = newRow.insertCell(4);
+            // newCell.innerHTML = "<input class='mycheckbox'type='checkbox' value='" + i + "'>";
+            // newCell.setAttribute("align","center"); //设置位置
         }
-        // document.getElementById("display").style.display="none";
         // document.getElementById("start").style.display="none";
 
     }
+
+    //刷新页面
     function reload(data){
         console.log(data)
         window.location.href=window.location.href;
     }
+    // 删除文件
     function DelFile(filename) {
-        ajaxSend("http://127.0.0.1:8000/upload", "DELETE", filename,reload);
+        ajaxSend("/upload", "DELETE", filename,reload);
     }
-
+    // 批量删除文件
     function DelFiles() {
         var filename = new Array();
         // $(".mycheckbox").each(function () {
@@ -91,7 +93,7 @@
         // var o = new Object();
         // o.filename = filename;
         var data = JSON.stringify(filename)
-        ajaxSend("http://127.0.0.1:8000/list", "DELETE", null,contentHandler);
+        ajaxSend("/upload", "DELETE", null,reload);
     }
 
     // ajax 对象
