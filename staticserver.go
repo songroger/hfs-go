@@ -42,7 +42,7 @@ func main() {
 	mux = make(map[string]func(http.ResponseWriter, *http.Request))
 	mux["/"] = index
 	mux["/upload"] = upload
-	mux["/file"] = StaticServer
+	// mux["/file"] = StaticServer
 	mux["/list"] = filelist
 	mux["/files"] = listindex
 	fmt.Println("服务已启动", Hosts)
