@@ -89,7 +89,7 @@
         //         filename.push($(this).parent().prev().prev().text());
         //     }
         // });
-        // if (filename.length < 1) return;   //没有选择时退出
+        if (filename.length < 1) return;   //没有选择时退出
         // var o = new Object();
         // o.filename = filename;
         var data = JSON.stringify(filename)
