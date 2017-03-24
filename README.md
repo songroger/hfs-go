@@ -1,42 +1,9 @@
-###一百行golng代码写一个静态文件服务器
+Go写的一个简单的hfs系统。
+适用于局域网内文件分享，智能路由上跑也不错。
+已编译文件`hfs-mips32`可以在mips32的cpu上跑, 已在极路由上测试。
 
-####包含功能 
+####功能 
+文件上传、下载、查看、删除
 
-1. 静态文件模板
-2. 文件上传
-3. 文件查看和下载
 
-####使用的包
-
-	import (
-		"fmt"
-		"html/template"
-		"io"
-		"net/http"
-		"os"
-		"path/filepath"
-		"regexp"
-		"strconv"
-		"time"
-	)
-
-####包含知识点
-
-	//静态文件服务器
-	http.FileServer(http.Dir("目录"))
-
-	//手工配置服务和路由
-	s := &http.Server{
-		Addr:           ":8080",
-		Handler:        myHandler,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
-	}
-
-	s.ListenAndServe();
-
-	// path/filepath包的使用
-
-麻雀虽小，但是有很多基础知识点适合学习golang的朋友们一起玩
-
+![preview](preview.png)
