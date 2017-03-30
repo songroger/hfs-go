@@ -38,6 +38,8 @@ func main() {
 		Addr:        Hosts,
 		Handler:     &Myhandler{},
 		ReadTimeout: 10 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		// IdleTimeout:  120 * time.Second,
 	}
 	mux = make(map[string]func(http.ResponseWriter, *http.Request))
 	mux["/"] = index
