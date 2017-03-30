@@ -92,8 +92,10 @@ func upload(w http.ResponseWriter, r *http.Request) {
 
 		// check file exists or not
 		fi, err := os.Open(Upload_Dir+filename)
+		defer fi.Close()
 		if err != nil && os.IsNotExist(err) {
 			f, _ := os.OpenFile(Upload_Dir+filename, os.O_CREATE|os.O_WRONLY, 0660)
+			defer f.Close()
 			_, err = io.Copy(f, file)
 			if err != nil {
 				fmt.Fprintf(w, "%v", "上传失败  "+ err.Error())
@@ -101,7 +103,6 @@ func upload(w http.ResponseWriter, r *http.Request) {
 			}
 			http.Redirect(w, r, "/files", http.StatusFound)
 		 }
-		defer fi.Close()
 		fmt.Fprintf(w, "%v", "文件已经存在，请重新上传")
 		
 		// filedir, _ := filepath.Abs(Upload_Dir + filename)
